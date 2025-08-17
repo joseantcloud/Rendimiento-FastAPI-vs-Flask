@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Prueba de APIs - Flask vs FastAPI</h1>
+
+        <!-- Inputs dinámicos -->
+        <div class="form-group">
+            <label for="flask-url">URL de Flask:</label>
+            <input type="text" id="flask-url" class="form-control" placeholder="http://127.0.0.1:8001/test-api">
+        </div>
+        <div class="form-group">
+            <label for="fastapi-url">URL de FastAPI:</label>
+            <input type="text" id="fastapi-url" class="form-control" placeholder="http://127.0.0.1:8002/test-api">
+        </div>
+
+        <!-- Botones -->
+        <button id="flask-btn" class="btn btn-primary">Obtener Datos de Flask</button>
+        <button id="fastapi-btn" class="btn btn-success">Obtener Datos de FastAPI</button>
+
+        <!-- Resultados -->
+        <div id="result" class="mt-4"></div>
+        <div id="item-list" class="mt-4"></div>
+    </div>
+
+    <!-- Footer con licencia y enlaces -->
+    <footer class="text-center mt-5 mb-3">
+        <hr>
+        <p><strong>Licencia de uso:</strong> Este software ha sido desarrollado bajo el nombre <em>Ant Cloud & Azure Guides</em>. 
+        Su uso es exclusivamente para fines de <strong>práctica</strong> y <strong>aprendizaje</strong>. 
+        <br>No está autorizado para uso comercial. Todos los derechos reservados ©.</p>
+
+        <p>
+            🔗 <a href="https://www.youtube.com/@joseantcloud" target="_blank">Canal de YouTube</a> | 
+            🌐 <a href="https://azureguides.cfd" target="_blank">Blog Azure Guides</a>
+        </p>
+    </footer>
+
+    <script>
+        // ======================================================
+        // Licencia de Ant Cloud y Azure Guides
+        // Uso exclusivo para prácticas y aprendizaje.
+        // Prohibido uso comercial - Derechos reservados.
+        // ======================================================
+
+        // Elementos del DOM
+        const flaskInput = document.getElementById("flask-url");
+        const fastApiInput = document.getElementById("fastapi-url");
+        const flaskButton = document.getElementById("flask-btn");
+        const fastApiButton = document.getElementById("fastapi-btn");
+        const resultDiv = document.getElementById("result");
+        const itemListDiv = document.getElementById("item-list");
+
+        // Cargar URLs desde localStorage (si existen)
+        flaskInput.value = localStorage.getItem("flaskApiUrl") || "http://127.0.0.1:8001/test-api";
+        fastApiInput.value = localStorage.getItem("fastApiUrl") || "http://127.0.0.1:8002/test-api";
+
+        // Guardar automáticamente al cambiar
+        flaskInput.addEventListener("input", () => {
+            localStorage.setItem("flaskApiUrl", flaskInput.value);
+        });
+        fastApiInput.addEventListener("input", () => {
+            localStorage.setItem("fastApiUrl", fastApiInput.value);
+        });
+
+        // Función para obtener datos de API
+        function getItemsFromApi(url, name) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error en la respuesta de ${name}: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    itemListDiv.innerHTML = `
+                        <h3>Datos de ${name}</h3>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Descripción</th>
+                                    <th>Prioridad</th>
+                                    <th>Completado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.map(item => `
+                                    <tr>
+                                        <td>${item.id}</td>
+                                        <td>${item.title}</td>
+                                        <td>${item.description}</td>
+                                        <td>${item.priority}</td>
+                                        <td>${item.complete === 1 ? 'Sí' : 'No'}</td>
+                                    </tr>
+                                `).join("")}
+                            </tbody>
+                        </table>
+                    `;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            Error en ${name}: ${error.message}
+                        </div>
+                    `;
+                });
+        }
+
+        // Eventos
+        flaskButton.addEventListener("click", () => {
+            resultDiv.innerHTML = '<div class="alert alert-info">Obteniendo datos de Flask...</div>';
+            getItemsFromApi(flaskInput.value, "Flask");
+        });
+
+        fastApiButton.addEventListener("click", () => {
+            resultDiv.innerHTML = '<div class="alert alert-info">Obteniendo datos de FastAPI...</div>';
+            getItemsFromApi(fastApiInput.value, "FastAPI");
+        });
+    </script>
+</body>
+</html>
