@@ -6,99 +6,69 @@ La evaluación de frameworks backend va mucho más allá de la facilidad de desa
 
 Una mala elección tecnológica puede derivar en:
 
-Altas latencias, que impactan directamente en la experiencia de usuario.
+- **Altas latencias**, que impactan directamente en la experiencia de usuario.  
+- **Fallas bajo picos de tráfico**, comprometiendo la estabilidad del sistema en momentos clave.  
+- **Costos innecesarios en la nube**, ya que un framework menos eficiente puede requerir más recursos para ofrecer el mismo nivel de servicio.  
 
-Fallas bajo picos de tráfico, comprometiendo la estabilidad del sistema en momentos clave.
+Por ello, el uso de métricas objetivas (**Requests per Second, latencia promedio, percentiles de respuesta, tasa de errores**) se convierte en una práctica esencial dentro de la ingeniería del software moderna y DevOps.  
 
-Costos innecesarios en la nube, ya que un framework menos eficiente puede requerir más recursos para ofrecer el mismo nivel de servicio.
+Este documento aborda un caso práctico que combina **Docker, Azure App Service y pruebas de carga con Locust** para demostrar cómo una estrategia basada en métricas ofrece claridad y respaldo en la toma de decisiones técnicas.  
 
-Por ello, el uso de métricas objetivas (Requests per Second, latencia promedio, percentiles de respuesta, tasa de errores) se convierte en una práctica esencial dentro de la ingeniería del software moderna y DevOps. Medir no solo permite comparar frameworks como Flask y FastAPI, sino también fundamentar decisiones de arquitectura en datos cuantificables en lugar de percepciones subjetivas.
-
-En este documento se aborda un caso práctico que combina Docker, Azure App Service y pruebas de carga con Locust para demostrar cómo una estrategia basada en métricas ofrece claridad y respaldo en la toma de decisiones técnicas.
 ---
 
-###
-Requisitos
+## Requisitos
 
 Antes de iniciar con la construcción, despliegue y pruebas, es necesario contar con las siguientes herramientas y servicios configurados:
 
-1. Cuenta en Azure
+### 1. Cuenta en Azure
+- Suscripción activa de Azure.  
+- Permisos para crear **Resource Groups, App Service Plans, WebApps y Azure Container Registry (ACR)**.  
+- Rol mínimo recomendado: **Contributor**.  
 
-Una suscripción activa de Azure.
+### 2. Entorno Local
+- Sistema operativo: Windows, Linux o macOS.  
+- Python **3.10+** instalado para ejecutar Locust y las apps de prueba.  
+- Conectividad a internet estable para subir imágenes y ejecutar pruebas.  
 
-Permisos para crear Resource Groups, App Service Plans, App Services y Azure Container Registry (ACR).
+### 3. Azure CLI
+- Instalación local, versión **2.60+**.  
+- Verificación:  
+  ```bash
+  az --version
+  ```
 
-Es recomendable contar con acceso de rol Contributor o superior.
+### 4. Docker
+- Instalación local para construir y testear imágenes.  
+- Verificación:  
+  ```bash
+  docker --version
+  ```
 
-2. Entorno Local
+### 5. Azure Container Registry (ACR)
+- Registro privado en Azure para subir imágenes.  
+- Ejemplo: `fastvsflaskacrdemo.azurecr.io`.  
+- Se habilita con:
+  ```bash
+  az acr create --resource-group <rg> --name <acr-name> --sku Basic --admin-enabled true
+  ```
 
-Sistema operativo: Windows, Linux o macOS.
+### 6. Azure App Service
+- PaaS de Azure que ejecuta imágenes Docker como aplicaciones web.  
+- Requiere un **App Service Plan**.  
+- Dos apps a desplegar:  
+  - `flask-webapp-demo` (puerto 8001)  
+  - `fastapi-webapp-demo` (puerto 8000)  
 
-Conectividad estable a internet para ejecutar pruebas y subir imágenes.
+### 7. Locust
+- Instalación local:  
+  ```bash
+  pip install locust
+  ```  
+- Expone una UI web en: [http://localhost:8089](http://localhost:8089)  
 
-Python 3.10+ instalado para ejecutar los proyectos y pruebas con Locust.
-
-3. Azure CLI
-
-Instalado en el entorno local.
-
-Versión mínima recomendada: 2.60+.
-
-Verificación:
-
-az --version
-
-
-Permite crear recursos en Azure desde línea de comandos y automatizar la integración.
-
-4. Docker
-
-Instalado en el entorno local.
-
-Verificación de instalación:
-
-docker --version
-
-
-Necesario para construir las imágenes de FastAPI y Flask a partir de los Dockerfiles.
-
-Requiere autenticación en Azure Container Registry (ACR) para subir imágenes.
-
-5. Azure Container Registry (ACR)
-
-Registro privado en Azure para almacenar imágenes Docker.
-
-Ejemplo: fastvsflaskacrdemo.azurecr.io.
-
-Se crea con:
-
-az acr create --resource-group <rg> --name <acr-name> --sku Basic
-
-6. Azure App Service
-
-Servicio PaaS de Azure que permite desplegar las imágenes Docker como aplicaciones web.
-
-Requiere un App Service Plan creado previamente.
-
-Ejemplo de dos aplicaciones a desplegar:
-
-fastapi-app (puerto 8000)
-
-flask-app (puerto 8001)
-
-7. Locust
-
-Herramienta de pruebas de carga que se instala localmente:
-
-pip install locust
-
-
-Permite generar usuarios concurrentes, medir latencia, fallos y Requests per Second (RPS).
-
-Accesible desde la interfaz web en http://localhost:8089 durante las pruebas.
 ---
 
-## Construcción y Subida de Imágenes a Azure Container Registry (ACR)
+## Construcción y Subida de Imágenes a ACR
 
 ### Crear Resource Group y ACR
 ```bash
@@ -107,14 +77,14 @@ az acr create --resource-group demofastvsflask --name fastvsflaskacrdemo --sku B
 az acr login --name fastvsflaskacrdemo
 ```
 
-### Flask – Construcción y subida
+### Flask – Build y Push
 ```bash
 docker build -t flask-app:latest .
 docker tag flask-app:latest fastvsflaskacrdemo.azurecr.io/flask-app:v1
 docker push fastvsflaskacrdemo.azurecr.io/flask-app:v1
 ```
 
-### FastAPI – Construcción y subida
+### FastAPI – Build y Push
 ```bash
 docker build -t fast-app:latest .
 docker tag fast-app:latest fastvsflaskacrdemo.azurecr.io/fast-app:v1
@@ -127,30 +97,23 @@ docker push fastvsflaskacrdemo.azurecr.io/fast-app:v1
 ```bash
 az appservice plan create --name fastvsflask-plan --resource-group demofastvsflask --sku B1 --is-linux
 
-# Flask App
 az webapp create --resource-group demofastvsflask --plan fastvsflask-plan --name flask-webapp-demo --deployment-container-image-name fastvsflaskacrdemo.azurecr.io/flask-app:v1
 
-# FastAPI App
 az webapp create --resource-group demofastvsflask --plan fastvsflask-plan --name fastapi-webapp-demo --deployment-container-image-name fastvsflaskacrdemo.azurecr.io/fast-app:v1
 ```
 
-Configurar credenciales del ACR en las WebApps:
+### Configuración de credenciales de ACR en las WebApps
 ```bash
-az webapp config container set --name flask-webapp-demo --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user <ACR-USERNAME> --docker-registry-server-password <ACR-PASSWORD>
+az webapp config container set --name flask-webapp-demo --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user acruser --docker-registry-server-password acrpass123!
 
-az webapp config container set --name fastapi-webapp-demo --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user <ACR-USERNAME> --docker-registry-server-password <ACR-PASSWORD>
+az webapp config container set --name fastapi-webapp-demo --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user acruser --docker-registry-server-password acrpass123!
 ```
 
 ---
 
 ## Pruebas de Carga con Locust
 
-### Instalar Locust
-```bash
-pip install locust
-```
-
-### locustfile.py
+### Archivo `locustfile.py`
 ```python
 from locust import HttpUser, task, between
 
@@ -162,29 +125,34 @@ class WebsiteUser(HttpUser):
         self.client.get("/test-api")
 ```
 
-### Ejecutar Locust
+### Ejecutar pruebas
 ```bash
 locust -f locustfile.py --host=https://flask-webapp-demo.azurewebsites.net
 locust -f locustfile.py --host=https://fastapi-webapp-demo.azurewebsites.net
 ```
 
-Acceder a la interfaz web en: http://localhost:8089
+Accede a: [http://localhost:8089](http://localhost:8089)  
 
 ---
 
 ## Métricas Clave y su Importancia
 
-1. **Latencia (P50, P95, P99):** mide rapidez de respuesta y experiencia de usuario. Una diferencia de 100 ms puede marcar la percepción de fluidez en apps de alto tráfico.  
-2. **Requests per Second (RPS):** refleja capacidad de procesamiento concurrente. Más RPS con menos recursos = mayor eficiencia y menores costos en Azure.  
-3. **Errores (HTTP 5xx):** revelan la estabilidad del sistema bajo presión. Una app con menor error-rate inspira confianza en producción.  
-4. **Uso de CPU/Memoria:** define qué tan liviano es el framework en ejecución. Directamente ligado a facturación en nube.  
-5. **Escalabilidad horizontal (Auto-Scale Azure):** cómo responde cada framework al aumentar instancias. FastAPI suele escalar con menor overhead.  
+1. **Latencia (P50, P95, P99):** impacto directo en UX. Una diferencia de 100 ms puede definir si un usuario permanece o abandona.  
+2. **Requests per Second (RPS):** eficiencia del framework bajo concurrencia → menos costo por petición.  
+3. **Errores (HTTP 5xx):** estabilidad bajo estrés; fallos recurrentes invalidan escalabilidad.  
+4. **CPU/Memoria:** consumo directo facturable en la nube. Frameworks ligeros reducen gasto mensual.  
+5. **Escalabilidad horizontal:** FastAPI, por ser asíncrono, escala mejor con más instancias.  
 
 ---
 
 ## Conclusiones
-- **FastAPI**: mayor rendimiento gracias a asincronía → mejor escalabilidad, menor latencia y consumo más eficiente de recursos.  
-- **Flask**: más sencillo, estable y con mayor ecosistema, pero menos eficiente bajo alta concurrencia.  
-- **Impacto en negocio**: elegir bien el framework impacta en **costos de infraestructura**, **experiencia de usuario** y **tiempo de respuesta al mercado**.  
+- **FastAPI**: mejor rendimiento, menor latencia y más eficiente bajo concurrencia.  
+- **Flask**: mayor simplicidad y comunidad madura, pero menos eficiente en alta carga.  
+- **Negocio**: elegir bien reduce costos en Azure y mejora experiencia de usuario final.  
 
-Este flujo (Docker + ACR + App Service + Locust) es un pipeline reproducible en cualquier proyecto backend moderno con cultura DevOps.
+---
+
+## Clean-up (para borrar todo)
+```bash
+az group delete --name demofastvsflask --yes --no-wait
+```
