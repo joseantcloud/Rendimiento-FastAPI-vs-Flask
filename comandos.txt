@@ -1,0 +1,1 @@
+az webapp config container set --name flask-webapp-demoxxx --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user acruser --docker-registry-server-password acrpass123!

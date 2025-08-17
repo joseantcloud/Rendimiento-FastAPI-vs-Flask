@@ -97,16 +97,9 @@ docker push fastvsflaskacrdemo.azurecr.io/fast-app:v1
 ```bash
 az appservice plan create --name fastvsflask-plan --resource-group demofastvsflask --sku B1 --is-linux
 
-az webapp create --resource-group demofastvsflask --plan fastvsflask-plan --name flask-webapp-demo --deployment-container-image-name fastvsflaskacrdemo.azurecr.io/flask-app:v1
+az webapp create --resource-group demofastvsflask --plan fastvsflask-plan --name flask-webapp-demox-2025 --deployment-container-image-name fastvsflaskacrdemo.azurecr.io/flask-app:v1
 
-az webapp create --resource-group demofastvsflask --plan fastvsflask-plan --name fastapi-webapp-demo --deployment-container-image-name fastvsflaskacrdemo.azurecr.io/fast-app:v1
-```
-
-### Configuración de credenciales de ACR en las WebApps
-```bash
-az webapp config container set --name flask-webapp-demo --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user acruser --docker-registry-server-password acrpass123!
-
-az webapp config container set --name fastapi-webapp-demo --resource-group demofastvsflask --docker-registry-server-url https://fastvsflaskacrdemo.azurecr.io --docker-registry-server-user acruser --docker-registry-server-password acrpass123!
+az webapp create --resource-group demofastvsflask --plan fastvsflask-plan --name fastapi-webapp-demox-2025 --deployment-container-image-name fastvsflaskacrdemo.azurecr.io/fast-app:v1
 ```
 
 ---
