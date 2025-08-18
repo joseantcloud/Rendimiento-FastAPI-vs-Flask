@@ -141,7 +141,7 @@ Antes de iniciar con la construcción, despliegue y pruebas, es necesario contar
 - Verificación:
   ```bash
   az --version
-````
+
 
 ### 4. Docker
 
