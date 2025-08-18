@@ -1,4 +1,3 @@
-````
 # Comparativa de Rendimiento: FastAPI vs Flask en Azure con Contenedores y Pruebas de Carga
 
 ## Introducción
@@ -288,8 +287,4 @@ Independiente del framework: instrumenta P95/P99, RPS y errores, habilita auto-e
 
 ```bash
 az group delete --name demofastvsflask --yes --no-wait
-```
-
-```
-
 ```
