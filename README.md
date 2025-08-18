@@ -275,6 +275,81 @@ Accede a: [http://localhost:8089](http://localhost:8089)
 
 ---
 
+# Métricas de Locust explicadas en lenguaje humano
+
+## 1. Latencia (P50, P95, P99)
+Imagina que pides un café en una fila.  
+- **Latencia** es cuánto tardan en entregarte el café desde que lo pediste.  
+- **P50 (percentil 50):** la mitad de las personas reciben el café en menos de este tiempo.  
+- **P95:** 95 de cada 100 reciben su café en menos de este tiempo (ya se empieza a ver a los que esperan más).  
+- **P99:** casi todos, pero muestra los casos extremos donde el barista se demora más.  
+
+En APIs:  
+- **P50** refleja la experiencia promedio.  
+- **P95/P99** muestran los cuellos de botella o lentitud en momentos de carga alta.
+
+---
+
+## 2. Throughput / Requests per Second (RPS)
+Piensa en una caja registradora de supermercado.  
+- **RPS** es cuántos clientes puede atender la caja por segundo sin colapsar.  
+- A mayor RPS, más eficiente es el servicio con la misma infraestructura.  
+
+En APIs:  
+- Mide la capacidad de aguante bajo carga.  
+- Más RPS con la misma máquina significa menor costo por cliente.
+
+---
+
+## 3. Tasa de errores (5xx / 429)
+Imagina que un restaurante se queda sin ingredientes o las mesas están llenas.  
+- **5xx:** la cocina falla (error del sistema).  
+- **429:** el mesero dice “no hay más mesas, espera” (el servidor rechaza peticiones porque ya no puede más).  
+
+En APIs:  
+- Una tasa alta de errores significa que el sistema no aguanta la demanda.
+
+---
+
+## 4. CPU y memoria
+Es como la energía y el espacio físico que usa un restaurante.  
+- **CPU alta:** los cocineros trabajando a tope, sin respiro.  
+- **Memoria llena:** la despensa y la nevera abarrotadas, sin lugar para más ingredientes.  
+
+En APIs:  
+- Si la CPU pasa del 70% por mucho tiempo, se recomienda escalar horizontalmente.  
+- Si la memoria se llena, los procesos se caen (Out Of Memory).
+
+---
+
+## 5. Escalabilidad horizontal
+Si tu restaurante está lleno, ¿contratas más cocineros o abres otra sucursal?  
+- Escalar horizontal es abrir más sucursales para repartir la carga.  
+
+En APIs:  
+- FastAPI escala con menos sobrecarga porque está diseñado para manejar varias órdenes al mismo tiempo.
+
+---
+
+## 6. Coste por petición (CPP)
+Si al final del día pagas 100 dólares de arriendo y atendiste 1.000 clientes, cada cliente costó 0.10 dólares en operación.  
+- **CPP** mide cuánto te cuesta atender a cada usuario con tu infraestructura.  
+
+En APIs:  
+- Un framework más eficiente reduce el costo unitario de servir peticiones.
+
+---
+
+## Resumen cotidiano
+- **Latencia:** qué tan rápido te sirven.  
+- **P95/P99:** muestran a los que esperan más tiempo en la fila.  
+- **RPS:** cuántos clientes puedes atender por segundo.  
+- **Errores:** cuando la cocina falla o el mesero no puede atender.  
+- **CPU/Memoria:** energía y espacio que consume el restaurante.  
+- **Escalabilidad:** abrir más sucursales si se llena.  
+- **CPP:** cuánto cuesta cada plato servido.
+
+
 ## Clean-up (para borrar todo)
 
 ```bash
@@ -282,3 +357,4 @@ az group delete --name demofastvsflask --yes --no-wait
 ```
 
 ---
+
