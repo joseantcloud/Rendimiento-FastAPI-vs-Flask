@@ -3,13 +3,13 @@
 ## Introducción
 
 Comparativa de Rendimiento: FastAPI vs Flask en Azure con Contenedores y Pruebas de Carga
-Introducción (versión mejorada)
+Introducción
 
 En ingeniería de software moderna, elegir el framework backend no es una cuestión de gusto: afecta SLO/SLA, experiencia de usuario y coste operativo. La pregunta clave no es “¿cuál es más popular?”, sino “cuál cumple nuestros objetivos de rendimiento y escala en producción con el menor coste por petición”.
 
 Una mala elección se traduce en latencias elevadas, errores 5xx/429 en picos y sobreaprovisionamiento de infraestructura. Para evitarlo, adoptamos un enfoque de medición objetiva alineado a prácticas DevOps: instrumentación, pruebas de carga y despliegue homogéneo con contenedores.
 
-Objetivo
+##Objetivo
 
 Comparar FastAPI y Flask desplegados en Azure App Service (Linux, contenedor), midiendo su comportamiento bajo carga con Locust y cuantificando el coste por petición usando la misma capacidad de cómputo.
 
@@ -57,7 +57,7 @@ locustfile.py y export de resultados (CSV/gráficas).
 
 Resumen ejecutivo con conclusiones y recomendaciones operativas.
 
-Métricas Clave y su Importancia (versión mejorada)
+###Métricas Clave y su Importancia
 
 Latencia (P50/P95/P99)
 
